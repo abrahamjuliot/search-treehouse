@@ -1,2 +1,2 @@
 # search-treehouse
-Search Treehouse Users by subject profile name(s) (using Treehouse API)
+Node App: Search Treehouse Users by subject profile name(s) (using Treehouse API)
