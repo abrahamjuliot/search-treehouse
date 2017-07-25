@@ -2,55 +2,76 @@
 
 const
 https = require('https'),
-error = require('./error'),
-printMessage = (username, badgeCount, points, subject) => {
-    const message = `${username} has ${badgeCount} total badge(s) and ${points} points in ${subject}`;
-    console.log(message);
-},
+print = require('./print'), // for message and error methods
+
+// gets a user's profile
 getProfile = (username, subject) => {
+    
+    // try getting https url
     try {
         const
-        url = `https://teamtreehouse.com/${username}.json`,
+        url = `https://teamtreehouse.com/${username}.json`, // treehouse API
+        
+        // define the request
         request = https.get(url, (res) => {
+            
+            // if the status code is 200 (OK)
             if (res.statusCode === 200) {
-                let body = '';
+                let body = ''; // to hold response chunks
                 
+                // As data fragments arrive
                 res.on('data', (data) => {
-                    body += data.toString();
+                    // append the data to the body
+                    body += data.toString(); // convert buffered data to string
                 });
                 
+                // When the response has ended
                 res.on('end', () => {
+                    // try getting the json string
                     try {
-                        const profile = JSON.parse(body);
-                        let points = 0;
+                        const profile = JSON.parse(body); // get parsed json
+                        let points = 0; // default points
+                        
+                        // if the subject exists
                         if (profile.points[subject]) {
+                            // get points for that subject
                             points = profile.points[subject];
                         }
-                        printMessage(
+                        // print user's total badges and points in subject
+                        print.message(
                             username,
                             profile.badges.length,
                             points,
                             subject
                         );
                     } catch (err) {
-                        error.print('JSON', err, res);
+                        // print JSON error and response status
+                        print.error('JSON', err, res);
                     }
                 });
             } else {
                 const 
+                // define error message
                 message = `There was an error getting profile ${username}`,
+                
+                // define new error
                 statusCodeError = new Error(message);
                 
-                error.print('Status Code', statusCodeError, res);
+                // print status code error and response status
+                print.error('Status Code', statusCodeError, res);
             }
     
         });
         
+        // When request error occures
         request.on('error', (err) => {
-            error.print('Request URL', err);
+            // print request error
+            print.error('Request URL', err);
         });
+        
     } catch (err) {
-        error.print('Protocol', err);
+        // print https error
+        print.error('Protocol', err);
     }
 };
 
